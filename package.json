@@ -1,0 +1,22 @@
+{
+  "name": "jsart-cli",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "bin": "bin/jsart",
+  "scripts": {
+    "test": "node bin/jsart"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.8.0"
+  },
+  "dependencies": {
+    "commander": "^4.1.1",
+    "download-git-repo": "^3.0.2",
+    "update-notifier": "^4.1.0"
+  }
+}
