@@ -1,9 +1,11 @@
-
+// eslint-disable-next-line no-undef
+const requireFunc = typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require
 const updateNotifier = require('update-notifier')
+
 const $tip = require('./printTip')
 const {getPkgPath} = require('./index')
 
-const pkg = require(getPkgPath())
+const pkg = requireFunc(getPkgPath())
 const notifier = updateNotifier({pkg, updateCheckInterval: 1000 * 60})
 
 $tip.version(`Jsart v${pkg.version}`)

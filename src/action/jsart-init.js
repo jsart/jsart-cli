@@ -1,10 +1,10 @@
 const fs = require('fs')
 const path = require('path')
+const {exec} = require('child_process')
 const inquirer = require('inquirer')
 const ora = require('ora')
 const download = require('download-git-repo')
 const handlebars = require('handlebars')
-const {exec} = require('child_process')
 const chalk = require('chalk')
 
 const $tip = require('../utils/printTip')
@@ -15,7 +15,7 @@ class InitProject {
   constructor (projectName) {
     this.projectName = projectName
     this.projectDir = process.cwd()
-    return this.init
+    this.init()
   }
 
   init () {
@@ -26,10 +26,11 @@ class InitProject {
       this.answers = answers
       $tip.log('Jsart 即将创建一个新项目！')
       this.downloadTpl().then(() => {
-        this.initGit()
-        this.installPkg().then(() => {
-          $tip.success(`创建项目 ${chalk.green.bold(this.projectName)} 成功！`)
-          $tip.success(`请进入项目目录 ${chalk.green.bold(this.projectName)} 开始工作吧！😝`)
+        this.initGit().then(() => {
+          this.installPkg().then(() => {
+            $tip.success(`创建项目 ${chalk.green.bold(this.projectName)} 成功！`)
+            $tip.success(`请进入项目目录 ${chalk.green.bold(this.projectName)} 开始工作吧!`)
+          })
         })
       })
     })
@@ -37,13 +38,15 @@ class InitProject {
 
   promptFillItem (needProjectName) {
     const fillItem  = []
+    const projectName = this.projectName
 
     // 项目名称
     if (needProjectName) {
+      $tip.warming(`当前目录已经存在 ${projectName} 项目，请换一个项目名！`)
       fillItem.push({
         type: 'input',
         name: 'projectName',
-        message: '当前目录已经存在 ${projectName} 项目，请换一个项目名！',
+        message: `请输入项目名称：`,
         validate (input) {
           if (!input) {
             return '项目名不能为空！'
@@ -60,14 +63,14 @@ class InitProject {
     fillItem.push({
       type: 'input',
       name: 'description',
-      message: '请输入项目介绍！'
+      message: '请输入项目介绍：'
     })
 
     // CSS预处理器
     fillItem.push({
       type: 'list',
       name: 'css',
-      message: '请选择 CSS 预处理器 (Sass/Less)',
+      message: '请选择 CSS 预处理器 (Sass/Less)：',
       choices: [
         {name: 'Sass', value: 'sass'},
         {name: 'Less', value: 'less'},
@@ -81,7 +84,8 @@ class InitProject {
   downloadTpl () {
     const {projectName, answers} = this
     return new Promise(resolve => {
-      const spinner = ora('正在下载模板文件...')
+      if (!config.tplDownload) return resolve()
+      const spinner = ora(`正在下载模板文件...`)
       spinner.start()
       download(config.tplGitUrl, projectName, {clone: true}, err => {
         if (err) {
@@ -108,19 +112,24 @@ class InitProject {
   }
 
   initGit () {
-    const {projectName, projectPath} = this
-    const spinner = ora(`cd ${chalk.cyan.bold(projectName)}, 执行 ${chalk.cyan.bold('git init')}`)
-    spinner.start()
-    process.chdir(projectPath)
-    const gitInit = exec('git init')
-    gitInit.on('close', code => {
-      if (code === 0) {
-        spinner.color = 'green'
-        spinner.succeed(gitInit.stdout.read())
-      } else {
-        spinner.color = 'red'
-        spinner.fail(gitInit.stderr.read())
-      }
+    return new Promise(resolve => {
+      if (!config.tplDownload) return resolve()
+      const {projectName, projectPath} = this
+      const spinner = ora(`cd ${chalk.cyan.bold(projectName)}, 执行 ${chalk.cyan.bold('git init')}...\n`)
+      spinner.start()
+      process.chdir(projectPath)
+      exec('git init', (error, stdout, stderr) => {
+        if (error) {
+          spinner.fail()
+          $tip.error('Git仓库初始化失败，请自行重新初始化！')
+          $tip.error(error)
+        } else {
+          spinner.succeed()
+          $tip.success('Git仓库初始化完成！')
+          $tip.success(`${stderr}${stdout}`)
+        }
+        resolve()
+      })
     })
   }
 
@@ -146,4 +155,4 @@ class InitProject {
   }
 }
 
-module.exports = new InitProject()
+module.exports = InitProject

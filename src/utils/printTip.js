@@ -9,7 +9,7 @@ class PrintTip {
       error: chalk.redBright(`${symbols.error} 错误`),
       warming: chalk.yellow(`${symbols.warning} 提示`),
       version: chalk.blueBright('版本'),
-      log: chalk.white('输出').underline()
+      log: chalk.underline.white('提示')
     }
 
     Object.keys(tipList).forEach(key => {

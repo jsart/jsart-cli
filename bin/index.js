@@ -1,12 +1,7 @@
 #!/usr/bin/env node
 
 const program = require('commander')
-const version = require('../src/utils/version')
-
-const action_init = require('../src/action/jsart-init')
-// const action_build = require('../src/action/jsart-build')
-// const action_serve = require('../src/action/jsart-serve')
-// const action_update = require('../src/action/jsart-update')
+const {version, JsartInit} = require('../dist/index.js')
 
 program
   .version(version, '-v, --version')
@@ -15,7 +10,7 @@ program
 program
   .command('init <projectName>')
   .description('Init a project with default templete')
-  .action(action_init)
+  .action(projectName => new JsartInit(projectName))
 
 // program
 //   .command('build')

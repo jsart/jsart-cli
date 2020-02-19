@@ -1,8 +1,9 @@
 const path = require('path')
 const {execSync} = require('child_process')
+const NODE_ENV = process.env.NODE_ENV || 'development'
 
 function getRootPath () {
-  return path.resolve(__dirname, '../../')
+  return path.resolve(__dirname, NODE_ENV === 'production' ? '../' : '../../')
 }
 
 function getPkgPath () {
